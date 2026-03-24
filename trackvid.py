@@ -98,7 +98,7 @@ def start_soccer_tracker():
         if not paused:
             ret, frame = cap.read()
             if not ret: 
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # Loop video files
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 continue
         
         display_frame = frame.copy()
@@ -134,14 +134,37 @@ def start_soccer_tracker():
 
             if ok:
                 x0, y0, x1, y1 = selection
-                center = (int((x0 + x1) / 2), int((y0 + y1) / 2))
+                w, h = x1 - x0, y1 - y0
+                mx, my = (x0 + x1) // 2, (y0 + y1) // 2
+                
+                # Corner and Crosshair scales
+                cw, ch = int(w * 0.1), int(h * 0.1) # 10% corners
+                xhw, xhh = int(w * 0.05), int(h * 0.05) # 5% crosshair length
+
+                # Corners
+                cv2.line(display_frame, (x0, y0), (x0 + cw, y0), (0, 255, 0), 2)
+                cv2.line(display_frame, (x0, y0), (x0, y0 + ch), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y0), (x1 - cw, y0), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y0), (x1, y0 + ch), (0, 255, 0), 2)
+                cv2.line(display_frame, (x0, y1), (x0 + cw, y1), (0, 255, 0), 2)
+                cv2.line(display_frame, (x0, y1), (x0, y1 - ch), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y1), (x1 - cw, y1), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y1), (x1, y1 - ch), (0, 255, 0), 2)
+
+                # Perpendicular Edge Crosshairs
+                cv2.line(display_frame, (mx, y0), (mx, y0 + xhh), (0, 255, 0), 2) # Top edge, pointing in
+                cv2.line(display_frame, (mx, y1), (mx, y1 - xhh), (0, 255, 0), 2) # Bottom edge, pointing in
+                cv2.line(display_frame, (x0, my), (x0 + xhw, my), (0, 255, 0), 2) # Left edge, pointing in
+                cv2.line(display_frame, (x1, my), (x1 - xhw, my), (0, 255, 0), 2) # Right edge, pointing in
+
+                center = (mx, my)
                 trail.append(center)
                 curr_time = time.time()
                 dt = curr_time - last_time
                 if last_pos and dt > 0:
                     velocity = math.sqrt((center[0]-last_pos[0])**2 + (center[1]-last_pos[1])**2) / dt
                 last_pos, last_time = center, curr_time
-                cv2.rectangle(display_frame, (x0, y0), (x1, y1), (0, 255, 0), 2)
+                
                 for i in range(1, len(trail[-20:])):
                     cv2.line(display_frame, trail[-20:][i-1], trail[-20:][i], (0, 255, 255), 1)
                 if frame_count % 30 == 0 and not searching_in_bg:
