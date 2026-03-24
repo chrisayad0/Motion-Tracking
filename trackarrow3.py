@@ -177,7 +177,27 @@ def start_soccer_tracker():
                 elif my > 2 * fh // 3:
                     draw_large_triangle(display_frame, "down", fw // 2, fh - (t_size//2 + 10), t_size, t_color)
 
-                cv2.rectangle(display_frame, (x0, y0), (x1, y1), (0, 255, 0), 2)
+                # --- Restoration of Corner and Crosshair UI ---
+                cw, ch = int(w * 0.1), int(h * 0.1) 
+                xhw, xhh = int(w * 0.05), int(h * 0.05)
+
+                # Corners
+                cv2.line(display_frame, (x0, y0), (x0 + cw, y0), (0, 255, 0), 2)
+                cv2.line(display_frame, (x0, y0), (x0, y0 + ch), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y0), (x1 - cw, y0), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y0), (x1, y0 + ch), (0, 255, 0), 2)
+                cv2.line(display_frame, (x0, y1), (x0 + cw, y1), (0, 255, 0), 2)
+                cv2.line(display_frame, (x0, y1), (x0, y1 - ch), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y1), (x1 - cw, y1), (0, 255, 0), 2)
+                cv2.line(display_frame, (x1, y1), (x1, y1 - ch), (0, 255, 0), 2)
+
+                # Edge Crosshairs
+                cv2.line(display_frame, (mx, y0), (mx, y0 + xhh), (0, 255, 0), 2) 
+                cv2.line(display_frame, (mx, y1), (mx, y1 - xhh), (0, 255, 0), 2) 
+                cv2.line(display_frame, (x0, my), (x0 + xhw, my), (0, 255, 0), 2) 
+                cv2.line(display_frame, (x1, my), (x1 - xhw, my), (0, 255, 0), 2)
+                # ----------------------------------------------
+
                 cv2.putText(display_frame, f"Motion: {motion_m_s:+.2f}", (x0, y0 - 10), 1, 1.2, (0, 255, 255), 2)
 
                 trail.append((mx, my))
